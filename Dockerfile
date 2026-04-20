@@ -1,9 +1,22 @@
+# STAGE 1: pobranie repo przez SSH
+FROM alpine AS source
+
+RUN apk add --no-cache git openssh
+
+RUN mkdir -p -m 0700 /root/.ssh && \
+    ssh-keyscan github.com >> /root/.ssh/known_hosts
+
+RUN --mount=type=ssh \
+    git clone git@github.com:yel0h/pawcho6.git /repo
+
 # STAGE 1: budowanie aplikacji
 FROM scratch AS builder
 
 ADD alpine-minirootfs-3.23.3-x86_64.tar /
 
 ARG VERSION=1.0
+
+COPY --from=source /repo /app
 
 RUN IP=$(hostname -i) && \
     HOST=$(hostname) && \
